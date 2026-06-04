@@ -35,20 +35,23 @@ function ContactForm() {
 
     try {
       setIsLoading(true);
-      
-      // const res = await axios.post(
-      //   `${process.env.NEXT_PUBLIC_APP_URL}/api/contact`,
-      //   userInput
-      // );
 
-      toast.success("Message sent successfully!");
-      setUserInput({
-        name: "",
-        email: "",
-        message: "",
-      });
+      const res = await axios.post("/api/contact", userInput);
+
+      if (res.data?.success) {
+        toast.success("Message sent successfully!");
+        setUserInput({
+          name: "",
+          email: "",
+          message: "",
+        });
+      } else {
+        toast.error(res.data?.message || "Failed to send message.");
+      }
     } catch (error) {
-      toast.error(error?.response?.data?.message);
+      toast.error(
+        error?.response?.data?.message || "Something went wrong. Please try again."
+      );
     } finally {
       setTimeout(() => setIsLoading(false), 1000);
     };
