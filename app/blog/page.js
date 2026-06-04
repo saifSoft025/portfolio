@@ -4,14 +4,24 @@ import { personalData } from "@/utils/data/personal-data";
 import BlogCard from "../components/homepage/blog/blog-card";
 
 async function getBlogs() {
-  const res = await fetch(`https://dev.to/api/articles?username=${personalData.devUsername}`)
+  try {
+    const res = await fetch(
+      `https://dev.to/api/articles?username=${personalData.devUsername}`,
+      // Revalidate hourly instead of failing the build if dev.to is unreachable.
+      { next: { revalidate: 3600 } }
+    );
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch data')
+    if (!res.ok) {
+      console.error(`Failed to fetch blogs from dev.to: ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch (error) {
+    console.error('Error fetching blogs from dev.to:', error.message);
+    return [];
   }
-
-  const data = await res.json();
-  return data;
 };
 
 async function page() {
